@@ -1,45 +1,7 @@
 'use client';
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const mockData = [
-  {
-    ticker: "MSFT",
-    name: "Microsoft",
-    price: "$388.45",
-    change: "+1.74%",
-    category: "Income & Stability"
-  },
-  {
-    ticker: "VOO",
-    name: "Vanguard S&P 500 ETF",
-    price: "$490.55",
-    change: "+1.78%",
-    category: "Income & Stability"
-  },
-  {
-    ticker: "PLTR",
-    name: "Palantir",
-    price: "$88.55",
-    change: "-0.06%",
-    category: "Growth & IPO"
-  },
-  {
-    ticker: "ARM",
-    name: "Arm Holdings",
-    price: "$103.99",
-    change: "+3.42%",
-    category: "Growth & IPO"
-  },
-  {
-    ticker: "RIVN",
-    name: "Rivian",
-    price: "$11.47",
-    change: "+0.18%",
-    category: "Growth & IPO"
-  }
-];
-
-const articles = [
+const mockArticles = [
   {
     title: "Microsoft’s AI Strategy is Working",
     url: "https://www.barrons.com/articles/microsoft-ai-growth"
@@ -63,25 +25,39 @@ const articles = [
 ];
 
 export default function HomePage() {
+  const [stockData, setStockData] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchStockData() {
+      const res = await fetch("/api/stocks");
+      const data = await res.json();
+      setStockData(data);
+    }
+
+    fetchStockData();
+  }, []);
+
   return (
     <main style={{ padding: 20, fontFamily: 'Arial' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Top 5 Stocks to Watch (Today)</h1>
-      {mockData.map((stock, index) => (
+      <h1 style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Top Stocks to Watch (Live)</h1>
+      {stockData.length > 0 ? stockData.map((stock, index) => (
         <div key={index} style={{ marginBottom: 16, padding: 12, border: '1px solid #ddd', borderRadius: 8 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div>
-              <h2 style={{ fontSize: 18 }}>{stock.name} ({stock.ticker})</h2>
-              <p style={{ color: '#666' }}>{stock.category}</p>
+              <h2 style={{ fontSize: 18 }}>{stock.name} ({stock.symbol})</h2>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p>{stock.price}</p>
-              <p style={{ color: stock.change.includes('+') ? 'green' : 'red' }}>{stock.change}</p>
+              <p>${stock.price}</p>
+              <p style={{ color: stock.change >= 0 ? 'green' : 'red' }}>
+                {stock.change >= 0 ? `+${stock.change}` : stock.change}
+              </p>
             </div>
           </div>
         </div>
-      ))}
+      )) : <p>Loading live stock data...</p>}
+
       <h2 style={{ fontSize: 20, fontWeight: 'bold', marginTop: 30 }}>Top 5 Articles</h2>
-      {articles.map((article, idx) => (
+      {mockArticles.map((article, idx) => (
         <a key={idx} href={article.url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', marginTop: 10, color: 'blue', textDecoration: 'underline' }}>
           {article.title}
         </a>
